@@ -78,7 +78,8 @@ export default defineConfig([
 
 
 
+
 ## Latest Release Info
-- Version: v1.0.4
+- Version: v1.0.5
 - PR Title: Manual push to main
-- Chuck Norris Joke: If they couldn't get John Malkovich for the movie 'Being John Malkovich', they would have simply changed it to 'Being Chuck Norris', and made a porno.
+- Chuck Norris Joke: In the 1980s, Chuck Norris dry fired a gun eastward. The result was the Chernobyl Incident
