@@ -1,0 +1,98 @@
+name: Release - Versioning and Documentation
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  release:
+    # Запускаємо тільки якщо пуш в main (а не просто тег або інша гілка)
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: read
+    steps:
+      # Крок 1: Клонуємо репозиторій
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Потрібно для правильної роботи з тегами
+
+      # Крок 2: Отримуємо випадковий жарт про Чака Норріса
+      - name: Get Chuck Norris Joke
+        id: joke
+        run: |
+          JOKE=$(curl -s https://api.chucknorris.io/jokes/random | jq -r '.value')
+          echo "joke=$JOKE" >> $GITHUB_OUTPUT
+          echo "Отримано жарт: $JOKE"
+
+      # Крок 3: Визначаємо назву Pull Request (якщо пуш був через merge PR)
+      - name: Get PR Title
+        id: pr_info
+        run: |
+          # Намагаємося знайти PR за SHA коміту
+          PR_TITLE=$(gh pr list --state merged --limit 1 --search "${{ github.sha }}" --json title --jq '.[0].title')
+          if [ -z "$PR_TITLE" ]; then
+            PR_TITLE="Manual push to main"
+          fi
+          echo "pr_title=$PR_TITLE" >> $GITHUB_OUTPUT
+          echo "Назва PR: $PR_TITLE"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Крок 4: Створюємо нову версію (v1.0.номер_запуску)
+      - name: Set Version
+        id: versioning
+        run: |
+          VERSION="v1.0.${{ github.run_number }}"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Нова версія: $VERSION"
+
+      # Крок 5: Оновлюємо README.md
+      - name: Update README.md
+        run: |
+          VERSION="${{ steps.versioning.outputs.version }}"
+          PR_TITLE="${{ steps.pr_info.outputs.pr_title }}"
+          JOKE="${{ steps.joke.outputs.joke }}"
+          
+          # Видаляємо старий блок інформації про реліз, якщо він є, і додаємо новий
+          # Використовуємо тимчасовий файл для надійності
+          sed -i '/## Latest Release Info/,/ Chuck Norris Joke:/d' README.md
+          
+          # Додаємо блок в кінець файлу
+          echo -e "\n## Latest Release Info" >> README.md
+          echo "- Version: $VERSION" >> README.md
+          echo "- PR Title: $PR_TITLE" >> README.md
+          echo "- Chuck Norris Joke: $JOKE" >> README.md
+          
+          # Налаштовуємо гіт та комітимо зміни
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add README.md
+          git commit -m "docs: update README with release info $VERSION [skip ci]" || echo "No changes to commit"
+          git push
+
+      # Крок 6: Створюємо Git Tag та GitHub Release
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.versioning.outputs.version }}
+          name: Release ${{ steps.versioning.outputs.version }}
+          body: |
+            ## Release Information
+            - **PR Title:** ${{ steps.pr_info.outputs.pr_title }}
+            - **Chuck Norris Joke:** ${{ steps.joke.outputs.joke }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      # Крок 7: Додаємо коментар до коміту з жартом (виконання пункту 4 завдання)
+      - name: Add Commit Comment
+        run: |
+          JOKE="${{ steps.joke.outputs.joke }}"
+          VERSION="${{ steps.versioning.outputs.version }}"
+          gh api -X POST /repos/${{ github.repository }}/commits/${{ github.sha }}/comments \
+            -f body="🚀 **Release $VERSION deployed!** here is a Chuck Norris joke for you: 
+            
+            $JOKE"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

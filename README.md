@@ -72,3 +72,8 @@ export default defineConfig([
 ])
 ```
 # ci-cd-lr-project
+
+## Latest Release Info
+- Version: v0.0.0
+- PR Title: Initial setup
+- Chuck Norris Joke: Chuck Norris doesn't need CI/CD, he just stares at the code until it deploys itself.
