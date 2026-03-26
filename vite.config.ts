@@ -1,16 +1,18 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// https://vite.dev/config/
+
 export default defineConfig({
-  base: '/ci-cd-lr-project/',
+  base: '/ci-cd-lr-project/', 
+  plugins: [react()],
   build: {
+    outDir: 'dist',
     rollupOptions: {
       output: {
-        dir: 'dist',
-        entryFileNames: 'ci-cd-lr-project.js'
+        entryFileNames: `assets/[name]-[hash].js`,
+        chunkFileNames: `assets/[name]-[hash].js`,
+        assetFileNames: `assets/[name]-[hash].[ext]`
       }
     }
-  },
-  plugins: [react()],
+  }
 })
