@@ -40,11 +40,10 @@ jobs:
           PR_TITLE="${{ github.event.pull_request.title }}"
           JOKE="${{ steps.chuck_joke.outputs.joke }}"
           
-          # Оновлюємо блок у README (використовуємо sed або просто додаємо в кінець)
           echo -e "\n## Latest Release Info\n- **Version:** $VERSION\n- **PR Title:** $PR_TITLE\n- **Chuck Norris Joke:** $JOKE" >> README.md
           
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add README.md
-          git commit -m "docs: update README with release info [skip ci]"
+          git commit -m "docs: update README with release info $VERSION [skip ci]"
           git push
