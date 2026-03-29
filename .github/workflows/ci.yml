@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+
+jobs:
+  check:
+    name: Lint, Test & Build
+    runs-on: ubuntu-latest
+    # Пропускаємо якщо це автоматичний коміт від самого workflow
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"       # кешування node_modules для швидкості
+
+      - name: Install dependencies
+        run: npm ci           # ci замість install — строге слідування package-lock.json
+
+      - name: Run lint
+        run: npm run lint     # при помилці — workflow зупиняється тут
+
+      - name: Run tests
+        run: npm run test     # при помилці — workflow зупиняється тут
+
+      - name: Run build
+        run: npm run build    # при помилці — workflow зупиняється тут

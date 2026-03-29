@@ -1,0 +1,102 @@
+name: Release
+
+on:
+  pull_request:
+    types: [closed]      # спрацьовує коли PR закривається (і при merge, і при простому close)
+    branches:
+      - main
+
+jobs:
+  release:
+    name: Create Release & Update README
+    # Запускаємось ТІЛЬКИ якщо PR був реально злитий, а не просто закритий
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write          # щоб пушити теги та коміти
+      pull-requests: write     # щоб додавати коментарі до PR
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0            # завантажуємо всю історію, щоб git tag працював коректно
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get Chuck Norris joke
+        id: joke
+        run: |
+          # Робимо запит до API та витягуємо поле value через jq
+          JOKE=$(curl -s https://api.chucknorris.io/jokes/random | jq -r '.value')
+          # Записуємо у GITHUB_OUTPUT — так передаємо значення між кроками
+          echo "joke=$JOKE" >> $GITHUB_OUTPUT
+
+      - name: Define version
+        id: version
+        run: |
+          # Формуємо версію: v1.0.<номер запуску workflow>
+          VERSION="v1.0.${{ github.run_number }}"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Create git tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag ${{ steps.version.outputs.version }}
+          git push origin ${{ steps.version.outputs.version }}
+
+      - name: Create GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create ${{ steps.version.outputs.version }} \
+            --title "Release ${{ steps.version.outputs.version }}" \
+            --notes "## Changes
+          PR: ${{ github.event.pull_request.title }}
+
+          ## Chuck Norris says:
+          > ${{ steps.joke.outputs.joke }}"
+
+      - name: Update README.md
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          JOKE="${{ steps.joke.outputs.joke }}"
+
+          # Видаляємо старий блок Latest Release Info якщо він є
+          # (щоб не накопичувались дублікати)
+          if grep -q "## Latest Release Info" README.md; then
+            # Видаляємо від рядка "## Latest Release Info" до наступного заголовку або кінця файлу
+            sed -i '/## Latest Release Info/,/^## [^L]/{ /^## [^L]/!d }' README.md
+            sed -i '/## Latest Release Info/d' README.md
+          fi
+
+          # Додаємо новий блок у кінець файлу
+          cat >> README.md << EOF
+
+          ## Latest Release Info
+          - Version: $VERSION
+          - PR Title: $PR_TITLE
+          - Chuck Norris Joke: $JOKE
+          EOF
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add README.md
+          # [skip ci] у повідомленні коміту — щоб CI не запустився знову
+          git commit -m "docs: update README with release $VERSION info [skip ci]"
+          git push
+
+      - name: Add joke comment to PR
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const joke = `${{ steps.joke.outputs.joke }}`;
+            const version = `${{ steps.version.outputs.version }}`;
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              body: `🚀 **Release ${version} successfully created!**\n\n💬 Chuck Norris says:\n> ${joke}`
+            });

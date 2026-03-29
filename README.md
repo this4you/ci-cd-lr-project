@@ -1,86 +1,89 @@
-# React + TypeScript + Vite
+Новиков Роман 371
 
+🛠️ Що було реалізовано
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+У межах лабораторної роботи було налаштовано повний CI/CD pipeline для React-застосунку, створеного за допомогою Vite, використовуючи GitHub Actions.
 
-Currently, two official plugins are available:
+🔹 1. Налаштування CI (Continuous Integration)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Створено workflow ci.yml, який запускається при кожному push та pull_request.
+Він виконує:
 
-## React Compiler
+встановлення залежностей (npm ci);
+перевірку коду за допомогою lint;
+запуск тестів;
+збірку проєкту (build).
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+У разі помилки на будь-якому етапі pipeline автоматично завершується зі статусом failed, що гарантує контроль якості коду.
 
-## Expanding the ESLint configuration
+🔹 2. Автоматичне створення релізу
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+Реалізовано workflow release.yml, який запускається після злиття Pull Request у гілку main.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+Він:
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+генерує версію у форматі v1.0.<run_number>;
+створює git tag;
+створює GitHub Release з описом змін.
+🔹 3. Інтеграція з зовнішнім API
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+У процесі релізу використовується API:
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+https://api.chucknorris.io/
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Під час виконання workflow:
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
-# ci-cd-lr-project
+автоматично отримується випадковий жарт;
+жарт додається до Release notes;
+жарт використовується в інших частинах автоматизації.
+🔹 4. Автоматичне оновлення README.md
 
+Після кожного релізу файл README автоматично оновлюється.
 
-
-
-
-
+Додається блок:
 
 ## Latest Release Info
-- Version: v1.0.7
-- PR Title: Manual push to main
-- Chuck Norris Joke: A mere slap in your face from Chuck Norris causes permanent, life long strabismus.
+- Version: ...
+- PR Title: ...
+- Chuck Norris Joke: ...
+
+Для уникнення повторного запуску CI використовується [skip ci] у commit message.
+
+🔹 5. Автоматичний коментар у Pull Request
+
+Після створення релізу до Pull Request автоматично додається коментар, який містить:
+
+номер релізу;
+жарт із API.
+🔹 6. Налаштування деплою (CD)
+
+Створено workflow deploy.yml, який:
+
+запускається після push у main;
+збирає проєкт;
+деплоїть його на GitHub Pages.
+
+Застосунок стає доступним за публічним URL.
+
+🔹 7. Налаштування GitHub Pages та Vite
+У репозиторії увімкнено GitHub Pages (через GitHub Actions).
+У vite.config.js встановлено правильний base шлях для коректної роботи на Pages.
+🔹 8. Перевірка роботи pipeline
+
+Було протестовано:
+
+запуск CI при створенні Pull Request;
+автоматичне створення релізу після merge;
+оновлення README;
+деплой застосунку;
+падіння pipeline при наявності помилок у коді.
+✅ Результат
+
+Реалізовано повністю автоматизований процес:
+
+перевірки якості коду;
+створення релізів;
+оновлення документації;
+публікації застосунку.
+
+Це відповідає сучасним практикам CI/CD у frontend-розробці. 🚀
