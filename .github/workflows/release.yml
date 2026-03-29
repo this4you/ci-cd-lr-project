@@ -1,0 +1,34 @@
+- name: Release
+  run: |
+    JOKE=$(curl -s https://api.chucknorris.io/jokes/random | jq -r '.value')
+    VERSION="v1.0.${{ github.run_number }}"
+    PR_TITLE="${{ github.event.pull_request.title }}"
+
+    python3 - <<'EOF'
+    import re, os
+
+    joke = os.environ['JOKE']
+    version = os.environ['VERSION']
+    pr_title = os.environ['PR_TITLE']
+
+    new_block = f"""
+- Version: {version}
+- PR Title: {pr_title}
+- Chuck Norris Joke: {joke}"""
+
+    with open('README.md', 'r') as f:
+        content = f.read()
+
+    pattern = r'## Latest Release Info.*'
+    if re.search(pattern, content, re.DOTALL):
+        content = re.sub(pattern, new_block, content, flags=re.DOTALL)
+    else:
+        content += '\n\n' + new_block
+
+    with open('README.md', 'w') as f:
+        f.write(content)
+    EOF
+  env:
+    JOKE: ${{ steps.joke.outputs.text }}
+    VERSION: ${{ steps.version.outputs.tag }}
+    PR_TITLE: ${{ github.event.pull_request.title }}
