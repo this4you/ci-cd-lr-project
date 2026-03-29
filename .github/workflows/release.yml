@@ -86,6 +86,3 @@ jobs:
             **Жарт:** ${{ steps.joke.outputs.text }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
