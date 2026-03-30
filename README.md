@@ -1,3 +1,15 @@
+## Latest Release Info
+- Version: v1.0.9
+- Chuck Norris Joke: NO ALISTER CHUCK NORRIS KICKS YO ASS :), NO ALISTER CHUCK NORRIS KICKS YO ASS :), NO ALISTER CHUCK NORRIS KICKS YO ASS :), NO ALISTER CHUCK NORRIS KICKS YO ASS :), NO ALISTER CHUCK NORRIS KICKS YO ASS :), NO ALISTER CHUCK NORRIS KICKS YO ASS :), NO ALISTER CHUCK NORRIS KICKS YO ASS :), NO ALISTER CHUCK NORRIS KICKS YO ASS :),
+
+## Latest Release Info
+- Version: v1.0.8
+- Chuck Norris Joke: After masturbation, Chuck Norris cleans off with Sand paper.
+
+## Latest Release Info
+- Version: v1.0.7
+- Chuck Norris Joke: Jack was nimble, Jack was quick, but Jack still couldn't dodge Chuck Norris' roundhouse kick.
+
 # React + TypeScript + Vite
 
 
