@@ -1,4 +1,8 @@
 ## Latest Release Info
+- Version: v1.0.9
+- Chuck Norris Joke: NO ALISTER CHUCK NORRIS KICKS YO ASS :), NO ALISTER CHUCK NORRIS KICKS YO ASS :), NO ALISTER CHUCK NORRIS KICKS YO ASS :), NO ALISTER CHUCK NORRIS KICKS YO ASS :), NO ALISTER CHUCK NORRIS KICKS YO ASS :), NO ALISTER CHUCK NORRIS KICKS YO ASS :), NO ALISTER CHUCK NORRIS KICKS YO ASS :), NO ALISTER CHUCK NORRIS KICKS YO ASS :),
+
+## Latest Release Info
 - Version: v1.0.8
 - Chuck Norris Joke: After masturbation, Chuck Norris cleans off with Sand paper.
 
