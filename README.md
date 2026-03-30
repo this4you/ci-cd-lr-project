@@ -1,3 +1,7 @@
+## Latest Release Info
+- Version: v1.0.7
+- Chuck Norris Joke: Jack was nimble, Jack was quick, but Jack still couldn't dodge Chuck Norris' roundhouse kick.
+
 # React + TypeScript + Vite
 
 
