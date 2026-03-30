@@ -8,25 +8,17 @@ on:
 jobs:
   release:
     runs-on: ubuntu-latest
-
+    permissions:
+      contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Get version
         id: version
         run: echo "VERSION=v1.0.${{ github.run_number }}" >> $GITHUB_OUTPUT
-
-      - name: Create tag
-        run: |
-          git config user.name "github-actions"
-          git config user.email "actions@github.com"
-          git tag ${{ steps.version.outputs.VERSION }}
-          git push origin ${{ steps.version.outputs.VERSION }}
-
-      - name: Get PR title
-        id: pr
-        run: echo "PR_TITLE=${{ github.event.head_commit.message }}" >> $GITHUB_OUTPUT
 
       - name: Get Chuck Norris joke
         id: joke
@@ -34,30 +26,25 @@ jobs:
           JOKE=$(curl -s https://api.chucknorris.io/jokes/random | jq -r '.value')
           echo "JOKE=$JOKE" >> $GITHUB_OUTPUT
 
-          - name: Comment joke on PR
-        uses: peter-evans/create-or-update-comment@v4
-         with:
-               issue-number: ${{ github.event.pull_request.number }}
-         body: ${{ steps.joke.outputs.JOKE }}
-
       - name: Update README
         run: |
-          echo "## Latest Release Info" > temp.md
-          echo "- Version: ${{ steps.version.outputs.VERSION }}" >> temp.md
-          echo "- PR Title: ${{ steps.pr.outputs.PR_TITLE }}" >> temp.md
-          echo "- Chuck Norris Joke: ${{ steps.joke.outputs.JOKE }}" >> temp.md
-          cat README.md >> temp.md
-          mv temp.md README.md
-
-      - name: Commit README
-        run: |
+          VERSION="${{ steps.version.outputs.VERSION }}"
+          JOKE="${{ steps.joke.outputs.JOKE }}"
+          echo -e "## Latest Release Info\n- Version: $VERSION\n- Chuck Norris Joke: $JOKE\n\n$(cat README.md)" > README.md
+          
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
           git add README.md
-          git commit -m "Update README with release info"
+          git commit -m "docs: update README with release info [skip ci]"
           git push
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.version.outputs.VERSION }}
+          name: Release ${{ steps.version.outputs.VERSION }}
           body: |
+            ### 🥊 Chuck Norris Joke of the Day
             ${{ steps.joke.outputs.JOKE }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
