@@ -1,0 +1,69 @@
+# deploy.yml — Деплой на GitHub Pages
+# Запускається: після успішного push у main (після merge PR)
+# Також після виконання release.yml (щоб задеплоїти актуальну версію з оновленим README)
+
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+
+# Дозволи для Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Гарантуємо, що одночасно деплоїться тільки один workflow
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    name: Build & Deploy
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Важливо для Vite: base у vite.config задає базовий шлях
+      # GitHub Pages публікує на: https://username.github.io/repo-name/
+      # Тому base має бути '/repo-name/'
+      # Передаємо ім'я репозиторію через змінну середовища
+      - name: Build project
+        run: npm run build
+        env:
+          # VITE_ префікс потрібен, щоб змінна була доступна в Vite
+          # Використовується у vite.config.js як base
+          VITE_BASE_URL: /${{ github.event.repository.name }}/
+
+      # Налаштовуємо GitHub Pages artifact
+      - name: Setup GitHub Pages
+        uses: actions/configure-pages@v5
+
+      # Завантажуємо папку dist як Pages artifact
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # Vite за замовчуванням будує в ./dist
+          path: ./dist
+
+      # Деплоїмо на GitHub Pages
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
